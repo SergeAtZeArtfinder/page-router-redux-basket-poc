@@ -1,3 +1,4 @@
+import React from "react";
 import type { NextPage, GetServerSideProps } from "next";
 import Head from "next/head";
 
@@ -23,7 +24,7 @@ const BasketPage: NextPage<PageProps> = ({}) => {
       </Head>
 
       <>
-        <h1 className="text-center mb-12 text-5xl font-bold">Home page</h1>
+        <h1 className="text-center mb-12 text-5xl font-bold">Basket page</h1>
         <Counter />
       </>
     </>
