@@ -1,22 +1,21 @@
 import type { NextPage, GetServerSideProps } from "next";
 import Head from "next/head";
+import { useSelector } from "react-redux";
 
-import Counter from "@/components/Counter";
 import { type RootState, initializeStore } from "@/lib/redux/store";
-import { incrementByAmount } from "@/lib/redux/exampleSlice";
-
-const fetchMockData = <D,>(data: D, timeout = 800): Promise<D> =>
-  new Promise<D>((resolve) => {
-    setTimeout(() => resolve(data), timeout);
-  });
+import { setInitialProducts } from "@/lib/redux/productsSlice";
+import { formatDateToString } from "@/lib/format";
+import prisma from "@/lib/db/prisma";
+import ProductCard from "@/components/ProductCard";
 
 export const getServerSideProps: GetServerSideProps<{
   preloadedState: RootState;
 }> = async () => {
   const store = initializeStore();
-  const newCount = await fetchMockData(12);
+  const products = await prisma.product.findMany();
+  const formatted = products.map((product) => formatDateToString(product));
   // Dispatch actions to update the state
-  store.dispatch(incrementByAmount(newCount));
+  store.dispatch(setInitialProducts(formatted));
 
   return {
     props: {
@@ -25,7 +24,11 @@ export const getServerSideProps: GetServerSideProps<{
   };
 };
 
-const HomePage: NextPage = ({}) => {
+const HomePage: NextPage = () => {
+  const { data, loading, error } = useSelector(
+    (state: RootState) => state.products
+  );
+
   return (
     <>
       <Head>
@@ -36,7 +39,14 @@ const HomePage: NextPage = ({}) => {
 
       <>
         <h1 className="text-center mb-12 text-5xl font-bold">Home page</h1>
-        <Counter />
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {loading && <p>Loading...</p>}
+          {error && <p>Error: {error}</p>}
+          {data &&
+            data.map((product) => (
+              <ProductCard key={product.id} product={product} />
+            ))}
+        </div>
       </>
     </>
   );

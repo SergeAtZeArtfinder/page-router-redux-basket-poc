@@ -1,16 +1,22 @@
 import { useMemo } from "react";
 
-import { configureStore, PreloadedState } from "@reduxjs/toolkit";
+import { configureStore, EnhancedStore } from "@reduxjs/toolkit";
 import exampleReducer from "./exampleSlice";
+import productsSlice from "./productsSlice";
 
-let store;
+type ReduxState = {
+  example: ReturnType<typeof exampleReducer>;
+  products: ReturnType<typeof productsSlice>;
+};
+let store: EnhancedStore<ReduxState>;
 
-export function initializeStore(preloadedState?: PreloadedState<RootState>) {
+export function initializeStore(preloadedState?: RootState) {
   let _store =
     store ??
     configureStore({
       reducer: {
         example: exampleReducer,
+        products: productsSlice,
       },
       preloadedState,
     });
@@ -20,9 +26,10 @@ export function initializeStore(preloadedState?: PreloadedState<RootState>) {
     _store = configureStore({
       reducer: {
         example: exampleReducer,
+        products: productsSlice,
       },
       preloadedState: {
-        ...store.getState(),
+        ...(store.getState() as object),
         ...preloadedState, // the server fetched state will override the client state
         // IF we want client state to override server state, we can swap the order of the spread operators
       },
@@ -38,7 +45,7 @@ export function initializeStore(preloadedState?: PreloadedState<RootState>) {
   return _store;
 }
 
-export function useStore(initialState: PreloadedState<RootState>) {
+export function useStore(initialState?: RootState) {
   const storeMemo = useMemo(
     () => initializeStore(initialState),
     [initialState]
