@@ -2,11 +2,20 @@ import React from "react";
 import type { NextPage, GetServerSideProps } from "next";
 import Head from "next/head";
 
+import { initializeStore } from "@/lib/redux/store";
+import { incrementByAmount } from "@/lib/redux/exampleSlice";
 import Counter from "@/components/Counter";
 
 export const getServerSideProps: GetServerSideProps = async () => {
+  const store = initializeStore();
+
+  // Dispatch actions to update the state if needed
+  store.dispatch(incrementByAmount(10));
+
   return {
-    props: {},
+    props: {
+      preloadedState: store.getState(),
+    },
   };
 };
 

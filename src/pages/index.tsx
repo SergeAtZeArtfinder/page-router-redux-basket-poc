@@ -2,22 +2,34 @@ import type { NextPage, GetServerSideProps } from "next";
 import Head from "next/head";
 
 import Counter from "@/components/Counter";
+import { type RootState, initializeStore } from "@/lib/redux/store";
+import { incrementByAmount } from "@/lib/redux/exampleSlice";
 
-export const getServerSideProps: GetServerSideProps = async () => {
+const fetchMockData = <D,>(data: D, timeout = 800): Promise<D> =>
+  new Promise<D>((resolve) => {
+    setTimeout(() => resolve(data), timeout);
+  });
+
+export const getServerSideProps: GetServerSideProps<{
+  preloadedState: RootState;
+}> = async () => {
+  const store = initializeStore();
+  const newCount = await fetchMockData(12);
+  // Dispatch actions to update the state
+  store.dispatch(incrementByAmount(newCount));
+
   return {
-    props: {},
+    props: {
+      preloadedState: store.getState(),
+    },
   };
 };
 
-interface PageProps {
-  basket: Record<string, unknown>;
-}
-
-const BasketPage: NextPage<PageProps> = ({}) => {
+const HomePage: NextPage = ({}) => {
   return (
     <>
       <Head>
-        <title>Basket Page</title>
+        <title>Home Page</title>
         <meta name="description" content="Next page" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
@@ -30,4 +42,4 @@ const BasketPage: NextPage<PageProps> = ({}) => {
   );
 };
 
-export default BasketPage;
+export default HomePage;

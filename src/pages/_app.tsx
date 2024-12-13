@@ -1,10 +1,16 @@
 import "@/styles/globals.css";
 import type { AppProps } from "next/app";
 import { Provider } from "react-redux";
-import store from "@/lib/redux/store";
+import { type RootState, useStore } from "@/lib/redux/store";
 import Navigation from "@/components/Navigation";
 
-export default function App({ Component, pageProps }: AppProps) {
+interface AppPageProps extends AppProps {
+  pageProps: Record<string, unknown> & { preloadedState: RootState };
+}
+
+export default function App({ Component, pageProps }: AppPageProps) {
+  const store = useStore(pageProps.preloadedState);
+
   return (
     <Provider store={store}>
       <Navigation />
