@@ -1,12 +1,19 @@
 import GoogleProvider from "next-auth/providers/google";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 
+import type { NextApiRequest, NextApiResponse } from "next";
 import type { NextAuthOptions } from "next-auth";
 
 import prisma from "@/lib/db/prisma";
-import { log } from "console";
+import { mergeAnonymousCartIntoUserCart } from "@/lib/db/cart";
 
-export const authOptions: NextAuthOptions = {
+export const getAuthOptions = ({
+  req,
+  res,
+}: {
+  req: NextApiRequest;
+  res: NextApiResponse;
+}): NextAuthOptions => ({
   adapter: PrismaAdapter(prisma),
   providers: [
     GoogleProvider({
@@ -33,8 +40,7 @@ export const authOptions: NextAuthOptions = {
   },
   events: {
     async signIn({ user }) {
-      log("signIn user merge carts: ", user);
-      //   await mergeAnonymousCartIntoUserCart(user.id);
+      await mergeAnonymousCartIntoUserCart({ userId: user.id, req, res });
     },
   },
-};
+});
