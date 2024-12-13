@@ -67,6 +67,8 @@ model ShippingInformation {
 
 model Account {
   id                String  @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
   userId            String  
   type              String
   provider          String
@@ -87,6 +89,8 @@ model Account {
 
 model Session {
   id           String   @id @default(uuid()) 
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
   sessionToken String   @unique
   userId       String   
   expires      DateTime
@@ -97,6 +101,8 @@ model Session {
 
 model User {
   id            String    @id @default(uuid()) 
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
   name          String?
   email         String?   @unique
   emailVerified DateTime?

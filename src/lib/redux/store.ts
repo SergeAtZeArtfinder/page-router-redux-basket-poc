@@ -1,11 +1,9 @@
 import { useMemo } from "react";
 
 import { configureStore, EnhancedStore } from "@reduxjs/toolkit";
-import exampleReducer from "./exampleSlice";
 import productsSlice from "./productsSlice";
 
 type ReduxState = {
-  example: ReturnType<typeof exampleReducer>;
   products: ReturnType<typeof productsSlice>;
 };
 let store: EnhancedStore<ReduxState>;
@@ -15,7 +13,6 @@ export function initializeStore(preloadedState?: RootState) {
     store ??
     configureStore({
       reducer: {
-        example: exampleReducer,
         products: productsSlice,
       },
       preloadedState,
@@ -25,7 +22,6 @@ export function initializeStore(preloadedState?: RootState) {
   if (preloadedState && store) {
     _store = configureStore({
       reducer: {
-        example: exampleReducer,
         products: productsSlice,
       },
       preloadedState: {

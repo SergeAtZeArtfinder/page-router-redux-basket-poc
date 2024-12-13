@@ -2,25 +2,14 @@ import React from "react";
 import type { NextPage, GetServerSideProps } from "next";
 import Head from "next/head";
 
-import { initializeStore } from "@/lib/redux/store";
-import { incrementByAmount } from "@/lib/redux/exampleSlice";
-import Counter from "@/components/Counter";
-
 export const getServerSideProps: GetServerSideProps = async () => {
-  const store = initializeStore();
-
-  // Dispatch actions to update the state if needed
-  store.dispatch(incrementByAmount(10));
-
   return {
-    props: {
-      preloadedState: store.getState(),
-    },
+    props: {},
   };
 };
 
 interface PageProps {
-  basket: Record<string, unknown>;
+  [x: string]: unknown;
 }
 
 const BasketPage: NextPage<PageProps> = ({}) => {
@@ -34,7 +23,6 @@ const BasketPage: NextPage<PageProps> = ({}) => {
 
       <>
         <h1 className="text-center mb-12 text-5xl font-bold">Basket page</h1>
-        <Counter />
       </>
     </>
   );
