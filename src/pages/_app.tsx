@@ -14,7 +14,7 @@ export default function App({ Component, pageProps }: AppPageProps) {
   return (
     <Provider store={store}>
       <Navigation />
-      <main className="flex flex-col items-center justify-center min-h-screen py-2">
+      <main className="min-h-screen max-w-6xl mx-auto py-2">
         <Component {...pageProps} />
       </main>
     </Provider>
