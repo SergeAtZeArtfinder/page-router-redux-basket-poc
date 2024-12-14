@@ -26,9 +26,9 @@ export const fetchCart = createAsyncThunk("cart/fetchCart", async () => {
     const message = await getErrorFromAPI(response, "Failed to fetch cart");
     throw new Error(message);
   }
-  const data: ShoppingCartWithShipping = await response.json();
+  const data: ShoppingCartWithShipping | null = await response.json();
 
-  return { ...data, shipping: data.shipping || [] };
+  return data ? { ...data, shipping: data.shipping || [] } : null;
 });
 
 /**
@@ -126,7 +126,7 @@ const cartSlice = createSlice({
       })
       .addCase(
         fetchCart.fulfilled,
-        (state, action: PayloadAction<ShoppingCartWithShipping>) => {
+        (state, action: PayloadAction<ShoppingCartWithShipping | null>) => {
           state.loading = false;
           state.data = action.payload;
         }
@@ -141,7 +141,7 @@ const cartSlice = createSlice({
       })
       .addCase(
         updateCartQuantity.fulfilled,
-        (state, action: PayloadAction<ShoppingCartWithShipping>) => {
+        (state, action: PayloadAction<ShoppingCartWithShipping | null>) => {
           state.loading = false;
           state.data = action.payload;
         }
@@ -156,7 +156,7 @@ const cartSlice = createSlice({
       })
       .addCase(
         addShippingAddress.fulfilled,
-        (state, action: PayloadAction<ShoppingCartWithShipping>) => {
+        (state, action: PayloadAction<ShoppingCartWithShipping | null>) => {
           state.loading = false;
           state.data = action.payload;
         }
@@ -171,7 +171,7 @@ const cartSlice = createSlice({
       })
       .addCase(
         selectOrDeleteShippingAddress.fulfilled,
-        (state, action: PayloadAction<ShoppingCartWithShipping>) => {
+        (state, action: PayloadAction<ShoppingCartWithShipping | null>) => {
           state.loading = false;
           state.data = action.payload;
         }

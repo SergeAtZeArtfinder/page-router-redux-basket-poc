@@ -1,6 +1,12 @@
 import { useMemo } from "react";
 
-import { configureStore, EnhancedStore } from "@reduxjs/toolkit";
+import {
+  configureStore,
+  EnhancedStore,
+  Dispatch,
+  PayloadAction,
+} from "@reduxjs/toolkit";
+import { useDispatch } from "react-redux";
 import productsSlice from "./productsSlice";
 import cartSlice from "./cartSlice";
 
@@ -54,4 +60,7 @@ export function useStore(initialState?: RootState) {
 }
 
 export type RootState = ReturnType<typeof store.getState>;
-export type AppDispatch = typeof store.dispatch;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type AppDispatch = Dispatch<PayloadAction<any>>;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const useAppDispatch = (): Dispatch<any> => useDispatch<AppDispatch>();

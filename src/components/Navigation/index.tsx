@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useSession, signIn, signOut } from "next-auth/react";
 
 import { Button } from "../ui/button";
+import CartButton from "./CartButton";
 
 const Navigation = (): JSX.Element => {
   const { data: session } = useSession();
@@ -17,7 +18,8 @@ const Navigation = (): JSX.Element => {
       <Link href="/basket" className="text-lg font-semibold hover:underline">
         Basket
       </Link>
-      <div className="ml-auto">
+      <div className="ml-auto flex gap-4 items-center">
+        <CartButton />
         {session ? (
           <Button
             onClick={() => signOut()}

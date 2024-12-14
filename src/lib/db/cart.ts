@@ -21,7 +21,7 @@ export const createCart = async ({
   setCartCookie,
   session,
 }: {
-  setCartCookie: (name: string, value: string, isExpired?: boolean) => void;
+  setCartCookie: (value: string, isExpired?: boolean) => void;
   session?: Session | null;
 }): Promise<ShoppingCart> => {
   let newCart: Cart;
@@ -40,7 +40,7 @@ export const createCart = async ({
     // if anonymous user create a cookie with the cart ID
     // Note: needs encryption and secure, httpOnly settings if to be used in production
 
-    setCartCookie("localCartId", newCart.id);
+    setCartCookie(newCart.id);
 
     // res.setHeader("Set-Cookie", `localCartId=${newCart.id}; Path=/`);
   }
@@ -355,6 +355,7 @@ export const incrementCartItemQty = async ({
           },
         },
       });
+
       await tx.product.update({
         where: {
           id: productId,

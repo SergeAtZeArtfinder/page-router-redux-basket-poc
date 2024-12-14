@@ -7,7 +7,7 @@ import { type RootState, initializeStore } from "@/lib/redux/store";
 import { setInitialProducts } from "@/lib/redux/productsSlice";
 import { setInitialCart } from "@/lib/redux/cartSlice";
 import { getCartWithShipping } from "@/lib/db/cart";
-import { formatDateToString } from "@/lib/format";
+import { serializeDates } from "@/lib/format";
 import { authOptions } from "@/lib/auth";
 import prisma from "@/lib/db/prisma";
 import ProductCard from "@/components/ProductCard";
@@ -18,15 +18,16 @@ export const getServerSideProps: GetServerSideProps<{
   const session = await getServerSession(req, res, authOptions);
   const store = initializeStore();
   const products = await prisma.product.findMany();
-  const formatted = products.map((product) => formatDateToString(product));
+  const formattedProducts = serializeDates(products);
   const cart = await getCartWithShipping({
     cookies: req.cookies,
     session,
   });
+  const formattedCart = cart ? serializeDates(cart) : null;
 
   // Dispatch actions to update the state
-  store.dispatch(setInitialProducts(formatted));
-  store.dispatch(setInitialCart(cart));
+  store.dispatch(setInitialProducts(formattedProducts));
+  store.dispatch(setInitialCart(formattedCart));
 
   return {
     props: {
