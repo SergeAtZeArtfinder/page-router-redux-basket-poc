@@ -1,26 +1,56 @@
 "use client";
 
-import React from "react";
+import React, { useEffect } from "react";
 import { useSelector } from "react-redux";
+import { ShoppingCart } from "lucide-react";
 
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { fetchCart } from "@/lib/redux/cartSlice";
 import { useAppDispatch, RootState } from "@/lib/redux/store";
-import { Button } from "../ui/button";
+
+import { formatPrice } from "@/lib/format";
+import Link from "next/link";
 
 const CartButton = (): JSX.Element => {
   const cart = useSelector((state: RootState) => state.cart.data);
   const dispatch = useAppDispatch();
 
-  const handleClick = () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    dispatch<any>(fetchCart());
-  };
+  useEffect(() => {
+    if (!cart) {
+      dispatch(fetchCart());
+    }
+  }, [cart, dispatch]);
 
   return (
-    <div className="flex gap-2 items-center">
-      <span>Cart: {cart ? cart.items.length : 0}</span>
-      <Button onClick={handleClick}>get cart</Button>
-    </div>
+    <DropdownMenu>
+      <DropdownMenuTrigger className="relative bg-slate-300 rounded-xl p-2 hover:bg-slate-400 active:bg-slate-400">
+        <ShoppingCart />
+        <Badge className="absolute w-[20px] h-[20px] top-[-4px] right-[-8px] rounded-full p-0 flex justify-center items-center">
+          {cart ? cart.items.length : 0}
+        </Badge>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end">
+        <DropdownMenuLabel>You basket</DropdownMenuLabel>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem>
+          Sub-total: {formatPrice(cart?.subTotal || 0)}
+        </DropdownMenuItem>
+        <DropdownMenuItem>
+          <Button asChild>
+            <Link href="/basket">see you basket</Link>
+          </Button>
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 };
 
