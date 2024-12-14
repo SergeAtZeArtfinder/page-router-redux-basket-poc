@@ -4,11 +4,20 @@ import { ParsedUrlQuery } from "querystring";
 import Head from "next/head";
 import Image from "next/image";
 import { useSelector } from "react-redux";
+import { getServerSession } from "next-auth";
 
-import { type RootState, initializeStore } from "@/lib/redux/store";
+import {
+  type RootState,
+  initializeStore,
+  useAppDispatch,
+} from "@/lib/redux/store";
 import { setInitialProduct } from "@/lib/redux/productsSlice";
+import { setInitialCart } from "@/lib/redux/cartSlice";
+import { updateCartQuantity } from "@/lib/redux/cartSlice";
+import { getCartWithShipping } from "@/lib/db/cart";
+import { authOptions } from "@/lib/auth";
 import prisma from "@/lib/db/prisma";
-import { formatDateToString, formatPrice } from "@/lib/format";
+import { formatDateToString, formatPrice, serializeDates } from "@/lib/format";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 
@@ -19,7 +28,7 @@ type PageParams = {
 export const getServerSideProps: GetServerSideProps<
   { [key: string]: unknown },
   PageParams
-> = async ({ params }) => {
+> = async ({ params, req, res }) => {
   const productId = params?.id;
   if (!productId) {
     return {
@@ -36,8 +45,16 @@ export const getServerSideProps: GetServerSideProps<
     };
   }
   const formatted = formatDateToString(product);
+  const session = await getServerSession(req, res, authOptions);
+  const cart = await getCartWithShipping({
+    cookies: req.cookies,
+    session,
+  });
+  const formattedCart = cart ? serializeDates(cart) : null;
   const store = initializeStore();
+
   store.dispatch(setInitialProduct(formatted));
+  store.dispatch(setInitialCart(formattedCart));
 
   return {
     props: {
@@ -53,14 +70,20 @@ interface PageProps {
 
 const ProductDetailsPage: NextPage<PageProps> = ({ productId }) => {
   const { data } = useSelector((state: RootState) => state.products);
+  const dispatch = useAppDispatch();
 
   const product = data.find((product) => product.id === productId);
+
+  const handleAddToCart = (productId: string) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    dispatch(updateCartQuantity({ productId }));
+  };
 
   if (!product) {
     return (
       <>
         <Head>
-          <title>Page</title>
+          <title>Not Found</title>
           <meta name="description" content="Next page" />
           <link rel="icon" href="/favicon.ico" />
         </Head>
@@ -71,8 +94,8 @@ const ProductDetailsPage: NextPage<PageProps> = ({ productId }) => {
   return (
     <>
       <Head>
-        <title>Page</title>
-        <meta name="description" content="Next page" />
+        <title>{product.name}</title>
+        <meta name="description" content={product.description} />
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
@@ -96,7 +119,12 @@ const ProductDetailsPage: NextPage<PageProps> = ({ productId }) => {
               Price: {formatPrice(product.price)}
             </Badge>
             <p>Quantity: {product.quantity}</p>
-            <Button className="w-full mt-auto mb-1 text-xl font-semibold">
+            <Button
+              onClick={() => {
+                handleAddToCart(product.id);
+              }}
+              className="w-full mt-auto mb-1 text-xl font-semibold"
+            >
               Add to cart
             </Button>
           </div>

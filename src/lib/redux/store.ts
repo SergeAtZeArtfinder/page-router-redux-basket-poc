@@ -1,12 +1,18 @@
 import { useMemo } from "react";
 
-import { configureStore, EnhancedStore } from "@reduxjs/toolkit";
-import exampleReducer from "./exampleSlice";
+import {
+  configureStore,
+  EnhancedStore,
+  Dispatch,
+  PayloadAction,
+} from "@reduxjs/toolkit";
+import { useDispatch } from "react-redux";
 import productsSlice from "./productsSlice";
+import cartSlice from "./cartSlice";
 
 type ReduxState = {
-  example: ReturnType<typeof exampleReducer>;
   products: ReturnType<typeof productsSlice>;
+  cart: ReturnType<typeof cartSlice>;
 };
 let store: EnhancedStore<ReduxState>;
 
@@ -15,8 +21,8 @@ export function initializeStore(preloadedState?: RootState) {
     store ??
     configureStore({
       reducer: {
-        example: exampleReducer,
         products: productsSlice,
+        cart: cartSlice,
       },
       preloadedState,
     });
@@ -25,8 +31,8 @@ export function initializeStore(preloadedState?: RootState) {
   if (preloadedState && store) {
     _store = configureStore({
       reducer: {
-        example: exampleReducer,
         products: productsSlice,
+        cart: cartSlice,
       },
       preloadedState: {
         ...(store.getState() as object),
@@ -54,4 +60,7 @@ export function useStore(initialState?: RootState) {
 }
 
 export type RootState = ReturnType<typeof store.getState>;
-export type AppDispatch = typeof store.dispatch;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type AppDispatch = Dispatch<PayloadAction<any>>;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const useAppDispatch = (): Dispatch<any> => useDispatch<AppDispatch>();
