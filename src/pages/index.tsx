@@ -1,7 +1,8 @@
-import type { NextPage, GetServerSideProps } from "next";
 import Head from "next/head";
 import { useSelector } from "react-redux";
 import { getServerSession } from "next-auth";
+
+import type { NextPage, GetServerSideProps } from "next";
 
 import { type RootState, initializeStore } from "@/lib/redux/store";
 import { setInitialProducts } from "@/lib/redux/productsSlice";

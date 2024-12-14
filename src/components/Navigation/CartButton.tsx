@@ -35,17 +35,21 @@ const CartButton = (): JSX.Element => {
       <DropdownMenuTrigger className="relative bg-slate-300 rounded-xl p-2 hover:bg-slate-400 active:bg-slate-400">
         <ShoppingCart />
         <Badge className="absolute w-[20px] h-[20px] top-[-4px] right-[-8px] rounded-full p-0 flex justify-center items-center">
-          {cart ? cart.items.length : 0}
+          {cart?.size || 0}
         </Badge>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        <DropdownMenuLabel>You basket</DropdownMenuLabel>
+        <DropdownMenuLabel>You have {cart?.size || 0} items</DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuItem>
           Sub-total: {formatPrice(cart?.subTotal || 0)}
         </DropdownMenuItem>
-        <DropdownMenuItem>
-          <Button asChild>
+        <DropdownMenuItem asChild>
+          <Button
+            asChild
+            variant="destructive"
+            className="font-bold text-lg cursor-pointer "
+          >
             <Link href="/basket">see you basket</Link>
           </Button>
         </DropdownMenuItem>
