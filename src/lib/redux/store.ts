@@ -2,9 +2,11 @@ import { useMemo } from "react";
 
 import { configureStore, EnhancedStore } from "@reduxjs/toolkit";
 import productsSlice from "./productsSlice";
+import cartSlice from "./cartSlice";
 
 type ReduxState = {
   products: ReturnType<typeof productsSlice>;
+  cart: ReturnType<typeof cartSlice>;
 };
 let store: EnhancedStore<ReduxState>;
 
@@ -14,6 +16,7 @@ export function initializeStore(preloadedState?: RootState) {
     configureStore({
       reducer: {
         products: productsSlice,
+        cart: cartSlice,
       },
       preloadedState,
     });
@@ -23,6 +26,7 @@ export function initializeStore(preloadedState?: RootState) {
     _store = configureStore({
       reducer: {
         products: productsSlice,
+        cart: cartSlice,
       },
       preloadedState: {
         ...(store.getState() as object),

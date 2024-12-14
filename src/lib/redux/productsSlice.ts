@@ -1,6 +1,7 @@
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 
 import { Product } from "@/types";
+import { getErrorFromAPI } from "../format";
 
 interface ProductsState {
   data: Product[];
@@ -20,7 +21,11 @@ export const fetchProducts = createAsyncThunk(
   async ({ skip, take }: { skip: number; take: number }) => {
     const response = await fetch(`/api/products?skip=${skip}&take=${take}`);
     if (!response.ok) {
-      throw new Error("Failed to fetch products");
+      const message = await getErrorFromAPI(
+        response,
+        "Failed to fetch products"
+      );
+      throw new Error(message);
     }
     const data: Product[] = await response.json();
 
@@ -34,7 +39,11 @@ export const fetchProductDetails = createAsyncThunk(
   async (id: string) => {
     const response = await fetch(`/api/products/${id}`);
     if (!response.ok) {
-      throw new Error("Failed to fetch product details");
+      const message = await getErrorFromAPI(
+        response,
+        "Failed to fetch product details"
+      );
+      throw new Error(message);
     }
     const data: Product = await response.json();
     return data;
@@ -53,7 +62,11 @@ export const updateProduct = createAsyncThunk(
       body: JSON.stringify(product),
     });
     if (!response.ok) {
-      throw new Error("Failed to update product");
+      const message = await getErrorFromAPI(
+        response,
+        "Failed to update product"
+      );
+      throw new Error(message);
     }
     const data: Product = await response.json();
     return data;
@@ -68,7 +81,11 @@ export const deleteProduct = createAsyncThunk(
       method: "DELETE",
     });
     if (!response.ok) {
-      throw new Error("Failed to delete product");
+      const message = await getErrorFromAPI(
+        response,
+        "Failed to delete product"
+      );
+      throw new Error(message);
     }
     const data: { id: string } = await response.json();
     return data;

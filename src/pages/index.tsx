@@ -1,21 +1,32 @@
 import type { NextPage, GetServerSideProps } from "next";
 import Head from "next/head";
 import { useSelector } from "react-redux";
+import { getServerSession } from "next-auth";
 
 import { type RootState, initializeStore } from "@/lib/redux/store";
 import { setInitialProducts } from "@/lib/redux/productsSlice";
+import { setInitialCart } from "@/lib/redux/cartSlice";
+import { getCartWithShipping } from "@/lib/db/cart";
 import { formatDateToString } from "@/lib/format";
+import { authOptions } from "@/lib/auth";
 import prisma from "@/lib/db/prisma";
 import ProductCard from "@/components/ProductCard";
 
 export const getServerSideProps: GetServerSideProps<{
   preloadedState: RootState;
-}> = async () => {
+}> = async ({ req, res }) => {
+  const session = await getServerSession(req, res, authOptions);
   const store = initializeStore();
   const products = await prisma.product.findMany();
   const formatted = products.map((product) => formatDateToString(product));
+  const cart = await getCartWithShipping({
+    cookies: req.cookies,
+    session,
+  });
+
   // Dispatch actions to update the state
   store.dispatch(setInitialProducts(formatted));
+  store.dispatch(setInitialCart(cart));
 
   return {
     props: {

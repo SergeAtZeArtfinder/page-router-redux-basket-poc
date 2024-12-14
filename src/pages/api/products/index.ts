@@ -19,7 +19,7 @@ const handleGet = async (req: NextApiRequest, res: NextApiResponse) => {
 const handlePost = async (req: NextApiRequest, res: NextApiResponse) => {
   const validation = createProductSchema.safeParse(req.body);
   if (!validation.success) {
-    res.status(400).json({ error: validation.error });
+    res.status(400).json({ error: validation.error.errors[0].message });
     return;
   }
 

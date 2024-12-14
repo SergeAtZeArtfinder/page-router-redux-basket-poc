@@ -16,3 +16,12 @@ export const formatDateToString = (item: DbProduct): Product => ({
   createdAt: item.createdAt.toString(),
   updatedAt: item.updatedAt.toString(),
 });
+
+export const getErrorFromAPI = async (
+  response: Response,
+  defaultMessage = "Failed to fetch data"
+) => {
+  const errorResponse: { error: string } = await response.json();
+
+  return errorResponse.error || defaultMessage;
+};

@@ -1,16 +1,16 @@
 import { CartItem } from "@prisma/client";
 import type { NextApiRequest, NextApiResponse } from "next";
-import { getServerSession } from "next-auth";
+import { getServerSession, type Session } from "next-auth";
 
 import type { Cart } from "@prisma/client";
-import {
+import type {
   CartWithProducts,
   CartWithProductsAndShipping,
   ShoppingCart,
   ShoppingCartWithShipping,
 } from "@/types";
 
-import { getAuthOptions } from "@/lib/auth";
+import { authOptions } from "@/lib/auth";
 import prisma from "./prisma";
 
 /**
@@ -18,13 +18,12 @@ import prisma from "./prisma";
  * for future retrieval, eg. in case of guest users
  */
 export const createCart = async ({
-  req,
-  res,
+  setCartCookie,
+  session,
 }: {
-  req: NextApiRequest;
-  res: NextApiResponse;
+  setCartCookie: (name: string, value: string, isExpired?: boolean) => void;
+  session?: Session | null;
 }): Promise<ShoppingCart> => {
-  const session = await getServerSession(getAuthOptions({ req, res }));
   let newCart: Cart;
 
   if (session) {
@@ -41,7 +40,9 @@ export const createCart = async ({
     // if anonymous user create a cookie with the cart ID
     // Note: needs encryption and secure, httpOnly settings if to be used in production
 
-    res.setHeader("Set-Cookie", `localCartId=${newCart.id}; Path=/`);
+    setCartCookie("localCartId", newCart.id);
+
+    // res.setHeader("Set-Cookie", `localCartId=${newCart.id}; Path=/`);
   }
 
   return {
@@ -53,13 +54,14 @@ export const createCart = async ({
 };
 
 export const getCart = async ({
-  req,
-  res,
+  cookies,
+  session,
 }: {
-  req: NextApiRequest;
-  res: NextApiResponse;
+  cookies: Partial<{
+    [key: string]: string;
+  }>;
+  session?: Session | null;
 }): Promise<ShoppingCart | null> => {
-  const session = await getServerSession(getAuthOptions({ req, res }));
   let cart: CartWithProducts | null = null;
 
   if (session) {
@@ -76,7 +78,7 @@ export const getCart = async ({
       },
     });
   } else {
-    const localCartId = req.cookies["localCartId"];
+    const localCartId = cookies["localCartId"];
 
     cart = localCartId
       ? await prisma.cart.findUnique({
@@ -109,13 +111,14 @@ export const getCart = async ({
 };
 
 export const getCartWithShipping = async ({
-  req,
-  res,
+  cookies,
+  session,
 }: {
-  req: NextApiRequest;
-  res: NextApiResponse;
+  cookies: Partial<{
+    [key: string]: string;
+  }>;
+  session?: Session | null;
 }): Promise<ShoppingCartWithShipping | null> => {
-  const session = await getServerSession(getAuthOptions({ req, res }));
   let cart: CartWithProductsAndShipping | null = null;
 
   if (session) {
@@ -133,7 +136,7 @@ export const getCartWithShipping = async ({
       },
     });
   } else {
-    const localCartId = req.cookies["localCartId"];
+    const localCartId = cookies["localCartId"];
 
     cart = localCartId
       ? await prisma.cart.findUnique({
@@ -284,3 +287,198 @@ function mergeCartItems(...cartItems: CartItem[][]) {
     return acc;
   }, [] as CartItem[]);
 }
+
+export const incrementCartItemQty = async ({
+  productId,
+  req,
+  res,
+}: {
+  req: NextApiRequest;
+  res: NextApiResponse;
+  productId: string;
+}) => {
+  const session = await getServerSession(req, res, authOptions);
+
+  await prisma.$transaction(async (tx) => {
+    let cart = await getCart({ cookies: req.cookies, session });
+    if (!cart) {
+      cart = await createCart({
+        setCartCookie: (value: string) => {
+          res.setHeader("Set-Cookie", `localCartId=${value}; Path=/`);
+        },
+        session,
+      });
+    }
+
+    const itemInTheCart = cart.items.find(
+      (item) => item.productId === productId
+    );
+
+    if (itemInTheCart) {
+      await tx.cart.update({
+        where: {
+          id: cart.id,
+        },
+        data: {
+          items: {
+            update: {
+              where: {
+                id: itemInTheCart.id,
+              },
+              data: {
+                quantity: {
+                  increment: 1,
+                },
+                product: {
+                  update: {
+                    quantity: {
+                      decrement: 1,
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      });
+    } else {
+      await tx.cart.update({
+        where: {
+          id: cart.id,
+        },
+        data: {
+          items: {
+            create: {
+              productId,
+              quantity: 1,
+            },
+          },
+        },
+      });
+      await tx.product.update({
+        where: {
+          id: productId,
+        },
+        data: {
+          quantity: {
+            decrement: 1,
+          },
+        },
+      });
+    }
+  });
+};
+
+export const setCartItemQty = async ({
+  productId,
+  quantity,
+  req,
+  res,
+}: {
+  productId: string;
+  quantity: number;
+  req: NextApiRequest;
+  res: NextApiResponse;
+}) => {
+  const session = await getServerSession(req, res, authOptions);
+
+  await prisma.$transaction(async (tx) => {
+    let cart = await getCart({ cookies: req.cookies, session });
+    if (!cart) {
+      cart = await createCart({
+        setCartCookie: (value: string) => {
+          res.setHeader("Set-Cookie", `localCartId=${value}; Path=/`);
+        },
+        session,
+      });
+    }
+
+    const itemInTheCart = cart.items.find(
+      (item) => item.productId === productId
+    );
+    if (itemInTheCart && quantity <= 0) {
+      await tx.cart.update({
+        where: {
+          id: cart.id,
+        },
+        data: {
+          items: {
+            delete: {
+              id: itemInTheCart.id,
+            },
+          },
+        },
+      });
+
+      await tx.product.update({
+        where: {
+          id: productId,
+        },
+        data: {
+          quantity: {
+            increment: itemInTheCart.quantity,
+          },
+        },
+      });
+
+      return;
+    }
+
+    if (itemInTheCart) {
+      const difference = quantity - itemInTheCart.quantity;
+      await tx.cart.update({
+        where: {
+          id: cart.id,
+        },
+        data: {
+          items: {
+            update: {
+              where: {
+                id: itemInTheCart.id,
+              },
+              data: {
+                quantity,
+                product: {
+                  update: {
+                    quantity:
+                      difference > 0
+                        ? {
+                            decrement: difference,
+                          }
+                        : {
+                            increment: Math.abs(difference),
+                          },
+                  },
+                },
+              },
+            },
+          },
+        },
+      });
+    } else {
+      await tx.cart.update({
+        where: {
+          id: cart.id,
+        },
+        data: {
+          items: {
+            create: {
+              productId,
+              quantity,
+            },
+          },
+        },
+      });
+      await tx.product.update({
+        where: {
+          id: productId,
+        },
+        data: {
+          quantity: {
+            decrement: quantity,
+          },
+        },
+      });
+    }
+  });
+};
