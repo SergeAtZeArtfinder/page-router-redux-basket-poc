@@ -17,7 +17,7 @@ import { authOptions } from "@/lib/auth";
 import Link from "next/link";
 import BasketLineItem from "@/components/BasketLineItem";
 import ShippingAddress from "@/components/ShippingAddress";
-import { Button } from "@/components/ui/button";
+import AddShippingAddress from "@/components/AddShippingAddress";
 
 export const getServerSideProps: GetServerSideProps = async ({ req, res }) => {
   const session = await getServerSession(req, res, authOptions);
@@ -103,7 +103,7 @@ const BasketPage: NextPage<PageProps> = ({}) => {
               </p>
             )}
             <div className="flex-1">
-              <Button>+ address</Button>
+              <AddShippingAddress />
             </div>
             {cart.shipping.map((address) => (
               <ShippingAddress
