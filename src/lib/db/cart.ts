@@ -56,11 +56,13 @@ export const createCart = async ({
 export const getCart = async ({
   cookies,
   session,
+  newCartId,
 }: {
   cookies: Partial<{
     [key: string]: string;
   }>;
   session?: Session | null;
+  newCartId?: string;
 }): Promise<ShoppingCart | null> => {
   let cart: CartWithProducts | null = null;
 
@@ -78,7 +80,7 @@ export const getCart = async ({
       },
     });
   } else {
-    const localCartId = cookies["localCartId"];
+    const localCartId = cookies["localCartId"] || newCartId;
 
     cart = localCartId
       ? await prisma.cart.findUnique({
@@ -113,11 +115,13 @@ export const getCart = async ({
 export const getCartWithShipping = async ({
   cookies,
   session,
+  newCartId,
 }: {
   cookies: Partial<{
     [key: string]: string;
   }>;
   session?: Session | null;
+  newCartId?: string;
 }): Promise<ShoppingCartWithShipping | null> => {
   let cart: CartWithProductsAndShipping | null = null;
 
@@ -136,7 +140,7 @@ export const getCartWithShipping = async ({
       },
     });
   } else {
-    const localCartId = cookies["localCartId"];
+    const localCartId = cookies["localCartId"] || newCartId;
 
     cart = localCartId
       ? await prisma.cart.findUnique({
@@ -298,6 +302,7 @@ export const incrementCartItemQty = async ({
   productId: string;
 }) => {
   const session = await getServerSession(req, res, authOptions);
+  let newCartId: string | undefined;
 
   await prisma.$transaction(async (tx) => {
     let cart = await getCart({ cookies: req.cookies, session });
@@ -308,6 +313,7 @@ export const incrementCartItemQty = async ({
         },
         session,
       });
+      newCartId = cart?.id;
     }
 
     const itemInTheCart = cart.items.find(
@@ -368,6 +374,8 @@ export const incrementCartItemQty = async ({
       });
     }
   });
+
+  return { newCartId };
 };
 
 export const setCartItemQty = async ({
@@ -382,6 +390,7 @@ export const setCartItemQty = async ({
   res: NextApiResponse;
 }) => {
   const session = await getServerSession(req, res, authOptions);
+  let newCartId: string | undefined;
 
   await prisma.$transaction(async (tx) => {
     let cart = await getCart({ cookies: req.cookies, session });
@@ -392,6 +401,7 @@ export const setCartItemQty = async ({
         },
         session,
       });
+      newCartId = cart?.id;
     }
 
     const itemInTheCart = cart.items.find(
@@ -482,4 +492,6 @@ export const setCartItemQty = async ({
       });
     }
   });
+
+  return { newCartId };
 };
