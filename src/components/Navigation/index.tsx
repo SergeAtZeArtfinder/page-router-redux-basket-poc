@@ -27,7 +27,7 @@ const Navigation = (): JSX.Element => {
   }, [dispatch, location?.ip]);
 
   return (
-    <nav className="w-full flex gap-2 max-w-5xl mx-auto h-12 items-center py-6">
+    <nav className="w-full flex gap-2 h-12 items-center py-6 my-4">
       <Link
         href="/"
         className="text-lg font-semibold w-10 h-10 rounded-xl bg-slate-300 hover:bg-slate-400 active:bg-slate-500 flex items-center justify-center"

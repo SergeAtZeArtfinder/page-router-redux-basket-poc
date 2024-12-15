@@ -16,7 +16,9 @@ export default function App({ Component, pageProps }: AppPageProps) {
   return (
     <SessionProvider>
       <Provider store={store}>
-        <Navigation />
+        <header className="max-w-6xl border-b mx-auto border-slate-300">
+          <Navigation />
+        </header>
         <main className="min-h-screen max-w-6xl mx-auto py-2">
           <Component {...pageProps} />
         </main>
