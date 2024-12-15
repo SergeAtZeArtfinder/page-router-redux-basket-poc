@@ -1,7 +1,9 @@
 import React from "react";
 import Head from "next/head";
+import { useRouter } from "next/router";
 import { useSelector } from "react-redux";
 import { getServerSession } from "next-auth";
+import { useSession } from "next-auth/react";
 import clsx from "clsx";
 
 import type { NextPage, GetServerSideProps } from "next";
@@ -24,6 +26,7 @@ import BasketLineItem from "@/components/BasketLineItem";
 import ShippingAddress from "@/components/ShippingAddress";
 import AddShippingAddress from "@/components/AddShippingAddress";
 import deliveryRates from "@/lib/content/deliveryRates.json";
+import { Button } from "@/components/ui/button";
 
 const getDeliveryRate = (country?: string) => {
   if (!country) return null;
@@ -34,17 +37,19 @@ export const getServerSideProps: GetServerSideProps = async ({ req, res }) => {
   const session = await getServerSession(req, res, authOptions);
   const store = initializeStore();
 
-  const cart = await getCartWithShipping({
+  const cartFound = await getCartWithShipping({
     cookies: req.cookies,
     session,
   });
-  const formattedCart = cart ? serializeDates(cart) : null;
+  const formattedCart = cartFound ? serializeDates(cartFound) : null;
 
   store.dispatch(setInitialCart(formattedCart));
 
+  const { cart } = store.getState();
+
   return {
     props: {
-      preloadedState: store.getState(),
+      preloadedState: { cart },
     },
   };
 };
@@ -53,8 +58,10 @@ interface PageProps {
   [x: string]: unknown;
 }
 
-const BasketPage: NextPage<PageProps> = ({}) => {
+const BasketPage: NextPage<PageProps> = () => {
   const dispatch = useAppDispatch();
+  const { data: session } = useSession();
+  const router = useRouter();
   const { data: cart, loading } = useSelector((state: RootState) => state.cart);
 
   const shippingAddress = cart?.shipping
@@ -66,6 +73,29 @@ const BasketPage: NextPage<PageProps> = ({}) => {
   const deliveryCost = deliveryRate
     ? formatPrice(deliveryRate)
     : "Not selected";
+  const orderTotal = formatPrice((cart?.subTotal ?? 0) + (deliveryRate ?? 0));
+  const isReadyToCheckout = !!cart?.items.length && !!deliveryRate;
+
+  const handleGoToCheckout = () => {
+    if (!isReadyToCheckout) return;
+    if (session) {
+      const order = `
+      Order
+      =============================================
+      User: ${session.user.email ?? "no email"}
+      Deliver to: 
+         ${shippingAddress?.name}.
+         ${shippingAddress?.address ?? "no address"}
+         ${shippingAddress?.city + " / " + shippingAddress?.postal}
+         ${shippingAddress?.country}
+      =============================================
+      Order total: ${orderTotal}
+      `;
+      alert(order);
+    } else {
+      router.push("/api/auth/signin?callbackUrl=/basket");
+    }
+  };
 
   const handleChangeQuantity = ({
     quantity,
@@ -176,12 +206,17 @@ const BasketPage: NextPage<PageProps> = ({}) => {
             </p>
 
             <p className="text-lg font-bold ml-auto grid grid-cols-[1fr,150px]">
-              Total:{" "}
-              <span className="flex justify-end">
-                {formatPrice((cart?.subTotal ?? 0) + (deliveryRate ?? 0))}
-              </span>
+              Total: <span className="flex justify-end">{orderTotal}</span>
             </p>
           </div>
+          <Button
+            onClick={handleGoToCheckout}
+            disabled={!isReadyToCheckout}
+            variant="destructive"
+            className="w-[250px] mt-4 mx-auto text-xl font-semibold"
+          >
+            Checkout{" "}
+          </Button>
         </div>
       </>
     </>

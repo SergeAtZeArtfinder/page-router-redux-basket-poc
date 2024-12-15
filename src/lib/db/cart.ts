@@ -76,6 +76,9 @@ export const getCart = async ({
           include: {
             product: true,
           },
+          orderBy: {
+            id: "asc",
+          },
         },
       },
     });
@@ -91,6 +94,9 @@ export const getCart = async ({
             items: {
               include: {
                 product: true,
+              },
+              orderBy: {
+                id: "asc",
               },
             },
           },
@@ -135,6 +141,9 @@ export const getCartWithShipping = async ({
           include: {
             product: true,
           },
+          orderBy: {
+            id: "asc",
+          },
         },
         shipping: true,
       },
@@ -151,6 +160,9 @@ export const getCartWithShipping = async ({
             items: {
               include: {
                 product: true,
+              },
+              orderBy: {
+                id: "asc",
               },
             },
             shipping: true,
