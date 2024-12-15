@@ -2,39 +2,23 @@
 
 import React from "react";
 import Link from "next/link";
-import { useSession, signIn, signOut } from "next-auth/react";
+import { MountainSnow } from "lucide-react";
 
-import { Button } from "../ui/button";
 import CartButton from "./CartButton";
+import UserButton from "./UserButton";
 
 const Navigation = (): JSX.Element => {
-  const { data: session } = useSession();
-
   return (
     <nav className="w-full flex gap-2 max-w-5xl mx-auto h-12 items-center py-6">
-      <Link href="/" className="text-lg font-semibold hover:underline">
-        Home
-      </Link>
-      <Link href="/basket" className="text-lg font-semibold hover:underline">
-        Basket
+      <Link
+        href="/"
+        className="text-lg font-semibold w-10 h-10 rounded-xl bg-slate-300 hover:bg-slate-400 active:bg-slate-500 flex items-center justify-center"
+      >
+        <MountainSnow />
       </Link>
       <div className="ml-auto flex gap-4 items-center">
         <CartButton />
-        {session ? (
-          <Button
-            onClick={() => signOut()}
-            className="text-lg font-semibold hover:underline"
-          >
-            Sign Out
-          </Button>
-        ) : (
-          <Button
-            onClick={() => signIn()}
-            className="text-lg font-semibold hover:underline"
-          >
-            Sign In
-          </Button>
-        )}
+        <UserButton />
       </div>
     </nav>
   );

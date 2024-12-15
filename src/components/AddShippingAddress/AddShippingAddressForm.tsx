@@ -3,7 +3,6 @@
 import React from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { useSelector } from "react-redux";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -29,7 +28,7 @@ import {
   createAddressSchema,
 } from "@/lib/validation/cart";
 import { addShippingAddress } from "@/lib/redux/cartSlice";
-import { useAppDispatch, RootState } from "@/lib/redux/store";
+import { useAppDispatch } from "@/lib/redux/store";
 import countries from "@/lib/content/countryByCurrencyCode.json";
 
 interface Props {
@@ -37,9 +36,7 @@ interface Props {
 }
 const AddShippingAddressForm = ({ onSuccess }: Props): JSX.Element => {
   const dispatch = useAppDispatch();
-  const { error: cartStateError } = useSelector(
-    (state: RootState) => state.cart
-  );
+
   const form = useForm<CreateAddressInput>({
     resolver: zodResolver(createAddressSchema),
     defaultValues: {
@@ -54,13 +51,6 @@ const AddShippingAddressForm = ({ onSuccess }: Props): JSX.Element => {
 
   if (form.formState.isSubmitSuccessful) {
     onSuccess();
-  }
-
-  if (cartStateError) {
-    form.setError("root", {
-      type: "manual",
-      message: cartStateError,
-    });
   }
 
   return (

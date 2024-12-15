@@ -11,7 +11,10 @@ import {
   initializeStore,
   useAppDispatch,
 } from "@/lib/redux/store";
-import { setInitialProduct } from "@/lib/redux/productsSlice";
+import {
+  setInitialProduct,
+  fetchProductDetails,
+} from "@/lib/redux/productsSlice";
 import { setInitialCart } from "@/lib/redux/cartSlice";
 import { updateCartQuantity } from "@/lib/redux/cartSlice";
 import { getCartWithShipping } from "@/lib/db/cart";
@@ -77,6 +80,7 @@ const ProductDetailsPage: NextPage<PageProps> = ({ productId }) => {
   const handleAddToCart = (productId: string) => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     dispatch(updateCartQuantity({ productId }));
+    dispatch(fetchProductDetails(productId));
   };
 
   if (!product) {
