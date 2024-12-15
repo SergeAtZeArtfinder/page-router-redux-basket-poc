@@ -15,8 +15,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
+import { Label } from "@/components/ui/label";
+import Spinner from "@/components/Spinner";
 import { formatPrice } from "@/lib/format";
-import { Label } from "../ui/label";
+import clsx from "clsx";
 
 const getOptions = (quantityAvailable: number) => {
   return Array.from({ length: quantityAvailable + 1 }, (_, i) => i);
@@ -35,7 +37,11 @@ const BasketLineItem = ({
 }: Props): JSX.Element => {
   return (
     <Card>
-      <CardContent className="pt-6 grid gap-4 sm:grid-cols-[1fr,2fr]">
+      <CardContent
+        className={clsx("pt-6 grid gap-4 sm:grid-cols-[1fr,2fr]", {
+          "opacity-80": loading,
+        })}
+      >
         <figure className="rounded-lg overflow-hidden h-48">
           <Link
             href={`/products/${item.product.id}`}
@@ -61,24 +67,27 @@ const BasketLineItem = ({
           </CardTitle>
 
           <Label htmlFor="quantity">Quantity</Label>
-          <Select
-            onValueChange={(value) => {
-              onChangeQuantity(parseInt(value, 10));
-            }}
-            value={item.quantity.toString()}
-            disabled={loading}
-          >
-            <SelectTrigger className="w-[100px]" disabled={loading}>
-              <SelectValue placeholder="Qty" />
-            </SelectTrigger>
-            <SelectContent id="quantity">
-              {getOptions(item.product.quantity).map((option) => (
-                <SelectItem key={option} value={option.toString()}>
-                  {option}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <div className="flex gap-4 items-center">
+            <Select
+              onValueChange={(value) => {
+                onChangeQuantity(parseInt(value, 10));
+              }}
+              value={item.quantity.toString()}
+              disabled={loading}
+            >
+              <SelectTrigger className="w-[100px]" disabled={loading}>
+                <SelectValue placeholder="Qty" />
+              </SelectTrigger>
+              <SelectContent id="quantity">
+                {getOptions(item.product.quantity).map((option) => (
+                  <SelectItem key={option} value={option.toString()}>
+                    {option}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {loading && <Spinner />}
+          </div>
 
           <Badge className="text-lg font-semibold ml-auto">
             Price: {formatPrice(item.quantity * item.product.price)}

@@ -23,6 +23,7 @@ import prisma from "@/lib/db/prisma";
 import { formatDateToString, formatPrice, serializeDates } from "@/lib/format";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import Spinner from "@/components/Spinner";
 
 type PageParams = {
   id: string;
@@ -49,19 +50,21 @@ export const getServerSideProps: GetServerSideProps<
   }
   const formatted = formatDateToString(product);
   const session = await getServerSession(req, res, authOptions);
-  const cart = await getCartWithShipping({
+  const cartFound = await getCartWithShipping({
     cookies: req.cookies,
     session,
   });
-  const formattedCart = cart ? serializeDates(cart) : null;
+  const formattedCart = cartFound ? serializeDates(cartFound) : null;
   const store = initializeStore();
 
   store.dispatch(setInitialProduct(formatted));
   store.dispatch(setInitialCart(formattedCart));
 
+  const { products, cart } = store.getState();
+
   return {
     props: {
-      preloadedState: store.getState(),
+      preloadedState: { products, cart },
       productId,
     },
   };
@@ -72,7 +75,7 @@ interface PageProps {
 }
 
 const ProductDetailsPage: NextPage<PageProps> = ({ productId }) => {
-  const { data } = useSelector((state: RootState) => state.products);
+  const { data, loading } = useSelector((state: RootState) => state.products);
   const dispatch = useAppDispatch();
 
   const product = data.find((product) => product.id === productId);
@@ -122,13 +125,17 @@ const ProductDetailsPage: NextPage<PageProps> = ({ productId }) => {
             <Badge className="text-lg font-semibold ml-auto">
               Price: {formatPrice(product.price)}
             </Badge>
-            <p>Quantity: {product.quantity}</p>
+            <p className="text-lg font-semibold">
+              Quantity: {product.quantity}
+            </p>
             <Button
               onClick={() => {
                 handleAddToCart(product.id);
               }}
-              className="w-full mt-auto mb-1 text-xl font-semibold"
+              className="w-full mt-auto mb-1 text-xl font-semibold flex gap-4 justify-center items-center"
+              disabled={loading}
             >
+              {loading && <Spinner />}
               Add to cart
             </Button>
           </div>

@@ -133,6 +133,9 @@ const handlePost = async (req: NextApiRequest, res: NextApiResponse) => {
         include: {
           product: true,
         },
+        orderBy: {
+          id: "asc",
+        },
       },
       shipping: true,
     },
@@ -223,6 +226,9 @@ const handlePut = async (req: NextApiRequest, res: NextApiResponse) => {
       items: {
         include: {
           product: true,
+        },
+        orderBy: {
+          id: "asc",
         },
       },
       shipping: true,

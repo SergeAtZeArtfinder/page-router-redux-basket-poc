@@ -14,25 +14,26 @@ import prisma from "@/lib/db/prisma";
 import ProductCard from "@/components/ProductCard";
 
 export const getServerSideProps: GetServerSideProps<{
-  preloadedState: RootState;
+  preloadedState: Partial<RootState>;
 }> = async ({ req, res }) => {
   const session = await getServerSession(req, res, authOptions);
   const store = initializeStore();
-  const products = await prisma.product.findMany();
-  const formattedProducts = serializeDates(products);
-  const cart = await getCartWithShipping({
+  const productsFound = await prisma.product.findMany();
+  const formattedProducts = serializeDates(productsFound);
+  const cartFound = await getCartWithShipping({
     cookies: req.cookies,
     session,
   });
-  const formattedCart = cart ? serializeDates(cart) : null;
+  const formattedCart = cartFound ? serializeDates(cartFound) : null;
 
   // Dispatch actions to update the state
   store.dispatch(setInitialProducts(formattedProducts));
   store.dispatch(setInitialCart(formattedCart));
+  const { products, cart } = store.getState();
 
   return {
     props: {
-      preloadedState: store.getState(),
+      preloadedState: { products, cart },
     },
   };
 };
@@ -51,7 +52,7 @@ const HomePage: NextPage = () => {
       </Head>
 
       <>
-        <h1 className="text-center mb-12 text-5xl font-bold">Home page</h1>
+        <h1 className="text-center mb-12 text-5xl font-bold">Buy this ! 👌</h1>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {loading && <p>Loading...</p>}
           {error && <p>Error: {error}</p>}

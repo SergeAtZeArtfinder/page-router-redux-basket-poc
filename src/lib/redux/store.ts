@@ -8,11 +8,13 @@ import {
 } from "@reduxjs/toolkit";
 import { useDispatch } from "react-redux";
 import productsSlice from "./productsSlice";
+import locationSlice from "./locationSlice";
 import cartSlice from "./cartSlice";
 
 type ReduxState = {
   products: ReturnType<typeof productsSlice>;
   cart: ReturnType<typeof cartSlice>;
+  location: ReturnType<typeof locationSlice>;
 };
 let store: EnhancedStore<ReduxState>;
 
@@ -23,6 +25,7 @@ export function initializeStore(preloadedState?: RootState) {
       reducer: {
         products: productsSlice,
         cart: cartSlice,
+        location: locationSlice,
       },
       preloadedState,
     });
@@ -33,6 +36,7 @@ export function initializeStore(preloadedState?: RootState) {
       reducer: {
         products: productsSlice,
         cart: cartSlice,
+        location: locationSlice,
       },
       preloadedState: {
         ...(store.getState() as object),
