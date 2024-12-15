@@ -40,6 +40,7 @@ const handleGet = async (req: NextApiRequest, res: NextApiResponse) => {
 const handlePut = async (req: NextApiRequest, res: NextApiResponse) => {
   try {
     const isUpdateQuantity = typeof req.body.quantity === "number";
+    let newCartId: string | undefined;
 
     if (isUpdateQuantity) {
       const validation = changeCartQtySchema.safeParse(req.body);
@@ -48,11 +49,12 @@ const handlePut = async (req: NextApiRequest, res: NextApiResponse) => {
         return;
       }
 
-      await setCartItemQty({
+      const result = await setCartItemQty({
         ...validation.data,
         req,
         res,
       });
+      newCartId = result.newCartId;
     } else {
       const validation = incrementCartQtySchema.safeParse(req.body);
       if (!validation.success) {
@@ -60,15 +62,20 @@ const handlePut = async (req: NextApiRequest, res: NextApiResponse) => {
         return;
       }
 
-      await incrementCartItemQty({
+      const result = await incrementCartItemQty({
         ...validation.data,
         req,
         res,
       });
+      newCartId = result.newCartId;
     }
 
     const session = await getServerSession(req, res, authOptions);
-    const cart = await getCartWithShipping({ cookies: req.cookies, session });
+    const cart = await getCartWithShipping({
+      cookies: req.cookies,
+      session,
+      newCartId,
+    });
 
     res.status(200).json(cart);
   } catch (error) {
