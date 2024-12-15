@@ -1,5 +1,5 @@
 import { Product as DbProduct } from "@prisma/client";
-import { Product } from "@/types";
+import { Product, IpAPIResponse, UserLocation } from "@/types";
 
 export const formatPrice = (
   intPrice: number,
@@ -55,3 +55,24 @@ export const readCookies = (headersCookie?: string): Record<string, string> => {
     return acc;
   }, {} as Record<string, string>);
 };
+
+export const formatUserLocation = ({
+  ip,
+  city,
+  country_code,
+  country_name,
+  region,
+  postal,
+  latitude,
+  longitude,
+}: IpAPIResponse): UserLocation => ({
+  ip,
+  countryName: country_name,
+  countryCode: country_code,
+  city,
+  region,
+  postal,
+  latitude,
+  longitude,
+  timestamp: Date.now(),
+});

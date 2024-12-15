@@ -3,6 +3,7 @@
 import React from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
+import { useSelector } from "react-redux";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -28,7 +29,7 @@ import {
   createAddressSchema,
 } from "@/lib/validation/cart";
 import { addShippingAddress } from "@/lib/redux/cartSlice";
-import { useAppDispatch } from "@/lib/redux/store";
+import { useAppDispatch, type RootState } from "@/lib/redux/store";
 import countries from "@/lib/content/countryByCurrencyCode.json";
 
 interface Props {
@@ -36,11 +37,15 @@ interface Props {
 }
 const AddShippingAddressForm = ({ onSuccess }: Props): JSX.Element => {
   const dispatch = useAppDispatch();
+  const location = useSelector((state: RootState) => state.location.data);
 
   const form = useForm<CreateAddressInput>({
     resolver: zodResolver(createAddressSchema),
     defaultValues: {
       isSelected: true,
+      city: location?.city || "",
+      postal: location?.postal || "",
+      country: location?.countryName || "",
     },
   });
 
