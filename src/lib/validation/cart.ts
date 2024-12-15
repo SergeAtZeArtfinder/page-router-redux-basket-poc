@@ -15,7 +15,7 @@ export const createAddressSchema = z.object({
   city: z.string().min(1, { message: "City is required" }),
   postal: z.string().min(5, { message: "Postal/zip code is required" }),
   country: z.string().min(1, { message: "Country is required" }),
-  isSelected: z.boolean().optional().default(true),
+  isSelected: z.boolean().optional(),
 });
 
 export type CreateAddressInput = z.infer<typeof createAddressSchema>;

@@ -16,9 +16,14 @@ import { Button } from "../ui/button";
 interface Props {
   address: ShoppingCartWithShipping["shipping"][number];
   handleUpdate: (operation: "select" | "delete") => void;
+  isSelected: boolean;
 }
 
-const ShippingAddress = ({ address, handleUpdate }: Props): JSX.Element => {
+const ShippingAddress = ({
+  address,
+  handleUpdate,
+  isSelected,
+}: Props): JSX.Element => {
   return (
     <Card>
       <CardHeader>
@@ -45,8 +50,9 @@ const ShippingAddress = ({ address, handleUpdate }: Props): JSX.Element => {
           onClick={() => {
             handleUpdate("select");
           }}
+          disabled={isSelected}
         >
-          select
+          {isSelected ? "✔ selected" : "select"}
         </Button>
       </CardFooter>
     </Card>

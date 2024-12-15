@@ -76,7 +76,7 @@ const deleteShippingAddress = async (cartId: string, addressId: string) => {
  * POST /api/cart/shipping { address: string, city: string, state: string, zip: string, isSelected: boolean }
  */
 const handlePost = async (req: NextApiRequest, res: NextApiResponse) => {
-  const session = await getServerSession(authOptions);
+  const session = await getServerSession(req, res, authOptions);
   if (!session) {
     return res.status(401).json({ error: "Unauthorized" });
   }
@@ -169,7 +169,7 @@ const handlePut = async (req: NextApiRequest, res: NextApiResponse) => {
     return res.status(400).json({ error: "Operation not provided" });
   }
 
-  const session = await getServerSession(authOptions);
+  const session = await getServerSession(req, res, authOptions);
   if (!session) {
     return res.status(401).json({ error: "Unauthorized" });
   }

@@ -2,6 +2,7 @@ import React from "react";
 import Head from "next/head";
 import { useSelector } from "react-redux";
 import { getServerSession } from "next-auth";
+import clsx from "clsx";
 
 import type { NextPage, GetServerSideProps } from "next";
 
@@ -10,14 +11,24 @@ import {
   initializeStore,
   useAppDispatch,
 } from "@/lib/redux/store";
-import { setInitialCart, updateCartQuantity } from "@/lib/redux/cartSlice";
+import {
+  setInitialCart,
+  updateCartQuantity,
+  selectOrDeleteShippingAddress,
+} from "@/lib/redux/cartSlice";
 import { getCartWithShipping } from "@/lib/db/cart";
 import { formatPrice, serializeDates } from "@/lib/format";
 import { authOptions } from "@/lib/auth";
 import Link from "next/link";
 import BasketLineItem from "@/components/BasketLineItem";
 import ShippingAddress from "@/components/ShippingAddress";
-import { Button } from "@/components/ui/button";
+import AddShippingAddress from "@/components/AddShippingAddress";
+import deliveryRates from "@/lib/content/deliveryRates.json";
+
+const getDeliveryRate = (country?: string) => {
+  if (!country) return null;
+  return (deliveryRates as Record<string, number>)[country] || null;
+};
 
 export const getServerSideProps: GetServerSideProps = async ({ req, res }) => {
   const session = await getServerSession(req, res, authOptions);
@@ -46,6 +57,16 @@ const BasketPage: NextPage<PageProps> = ({}) => {
   const dispatch = useAppDispatch();
   const { data: cart, loading } = useSelector((state: RootState) => state.cart);
 
+  const shippingAddress = cart?.shipping
+    ? cart.shipping.find(
+        (address) => address.id === cart.selectedShippingAddress
+      )
+    : null;
+  const deliveryRate = getDeliveryRate(shippingAddress?.country);
+  const deliveryCost = deliveryRate
+    ? formatPrice(deliveryRate)
+    : "Not selected";
+
   const handleChangeQuantity = ({
     quantity,
     productId,
@@ -54,6 +75,16 @@ const BasketPage: NextPage<PageProps> = ({}) => {
     productId: string;
   }) => {
     dispatch(updateCartQuantity({ quantity, productId }));
+  };
+
+  const handleUpdateAddress = (
+    addressId: string,
+    operation: "select" | "delete"
+  ) => {
+    if (!cart) return;
+    dispatch(
+      selectOrDeleteShippingAddress({ operation, addressId, cartId: cart.id })
+    );
   };
 
   if (!cart) {
@@ -68,8 +99,12 @@ const BasketPage: NextPage<PageProps> = ({}) => {
         <>
           <h1 className="text-center mb-12 text-5xl font-bold">Basket page</h1>
 
-          <p className="text-center">Hey 👋 ! Your basket is empty</p>
-          <Link href="/"> 🏃🏻‍♂️💨 Go buy something</Link>
+          <div className="max-w-md mx-auto flex flex-col justify-center items-center space-y-4 text-lg">
+            <p className="text-center">Hey 👋 ! Your basket is empty</p>
+            <Link href="/" className="underline">
+              🏃🏻‍♂️💨 Go buy something
+            </Link>
+          </div>
         </>
       </>
     );
@@ -96,31 +131,55 @@ const BasketPage: NextPage<PageProps> = ({}) => {
               }}
             />
           ))}
-          <div className="flex gap-2 justify-center">
+          <div className="">
+            <h2 className="text-2xl font-bold text-center ">
+              Your shipping addresses
+            </h2>
             {!cart.shipping.length && (
               <p className="flex-1">
                 you don&rsquo;t have any shipping address
               </p>
             )}
-            <div className="flex-1">
-              <Button>+ address</Button>
+            <div className="flex justify-end my-4">
+              <AddShippingAddress />
             </div>
-            {cart.shipping.map((address) => (
-              <ShippingAddress
-                key={address.id}
-                address={address}
-                handleUpdate={(operation) => {
-                  console.log("operation :>> ", operation, {
-                    cartId: cart.id,
-                    addressId: address.id,
-                  });
-                }}
-              />
-            ))}
+            <div className="grid grid-cols-1 md:grid-cols-gallery gap-2">
+              {cart.shipping.map((address) => (
+                <ShippingAddress
+                  key={address.id}
+                  address={address}
+                  handleUpdate={(operation) => {
+                    handleUpdateAddress(address.id, operation);
+                  }}
+                  isSelected={cart.selectedShippingAddress === address.id}
+                />
+              ))}
+            </div>
           </div>
-          <div className="flex justify-end">
-            <p className="text-lg font-semibold">
-              Subtotal: {formatPrice(cart.subTotal)}
+          <div className="flex flex-col items-end justify-end">
+            <p className="font-semibold grid grid-cols-[1fr,150px]">
+              Subtotal:{" "}
+              <span className="flex justify-end">
+                {formatPrice(cart.subTotal)}
+              </span>
+            </p>
+            <p className="font-bold ml-auto grid grid-cols-[1fr,150px]">
+              Shipping to {shippingAddress?.country ?? ""}:{" "}
+              <span
+                className={clsx(
+                  "flex justify-end",
+                  !deliveryRate && "text-red-600"
+                )}
+              >
+                {deliveryCost}
+              </span>
+            </p>
+
+            <p className="text-lg font-bold ml-auto grid grid-cols-[1fr,150px]">
+              Total:{" "}
+              <span className="flex justify-end">
+                {formatPrice((cart?.subTotal ?? 0) + (deliveryRate ?? 0))}
+              </span>
             </p>
           </div>
         </div>

@@ -5,6 +5,7 @@ import {
   CreateAddressInput,
   UpdateDeleteAddressInput,
 } from "@/lib/validation/cart";
+import { fetchProductDetails } from "./productsSlice";
 import { getErrorFromAPI } from "../format";
 
 interface CartState {
@@ -37,7 +38,10 @@ export const fetchCart = createAsyncThunk("cart/fetchCart", async () => {
  */
 export const updateCartQuantity = createAsyncThunk(
   "cart/updateCartQuantity",
-  async ({ productId, quantity }: { productId: string; quantity?: number }) => {
+  async (
+    { productId, quantity }: { productId: string; quantity?: number },
+    { dispatch }
+  ) => {
     const response = await fetch("/api/cart", {
       method: "PUT",
       headers: {
@@ -50,6 +54,8 @@ export const updateCartQuantity = createAsyncThunk(
       throw new Error(message);
     }
     const data: ShoppingCartWithShipping = await response.json();
+    // Fetch the product details to update the product qty in the store
+    dispatch(fetchProductDetails(productId));
 
     return data;
   }
