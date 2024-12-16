@@ -36,6 +36,9 @@ NEXTAUTH_URL="http://localhost:3000"
 NEXTAUTH_SECRET="some-secret-hash"
 ```
 
+- run `npx prisma generate` when connected to db
+- 😃 if not cloning, 🙏 please, don't push to `main` br.
+
 This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
 
 ## Getting Started
