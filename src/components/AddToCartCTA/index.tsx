@@ -7,6 +7,7 @@ import clsx from "clsx";
 import { type RootState, useAppDispatch } from "@/lib/redux/store";
 import { updateCartQuantity } from "@/lib/redux/cartSlice";
 import { Button } from "@/components/ui/button";
+import Spinner from "@/components/Spinner";
 
 interface Props {
   productId: string;
@@ -36,6 +37,7 @@ const AddToCartCTA = ({
       )}
       disabled={cart.loading}
     >
+      {cart.loading && <Spinner />}
       {children}
     </Button>
   );
