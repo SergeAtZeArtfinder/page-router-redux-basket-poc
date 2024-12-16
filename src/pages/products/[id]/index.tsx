@@ -6,23 +6,15 @@ import Image from "next/image";
 import { useSelector } from "react-redux";
 import { getServerSession } from "next-auth";
 
-import {
-  type RootState,
-  initializeStore,
-  useAppDispatch,
-} from "@/lib/redux/store";
-import {
-  setInitialProduct,
-  fetchProductDetails,
-} from "@/lib/redux/productsSlice";
+import { formatDateToString, formatPrice, serializeDates } from "@/lib/format";
+import { type RootState, initializeStore } from "@/lib/redux/store";
+import { setInitialProduct } from "@/lib/redux/productsSlice";
 import { setInitialCart } from "@/lib/redux/cartSlice";
-import { updateCartQuantity } from "@/lib/redux/cartSlice";
 import { getCartWithShipping } from "@/lib/db/cart";
 import { authOptions } from "@/lib/auth";
 import prisma from "@/lib/db/prisma";
-import { formatDateToString, formatPrice, serializeDates } from "@/lib/format";
+import AddToCartCTA from "@/components/AddToCartCTA";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 
 type PageParams = {
   id: string;
@@ -74,16 +66,9 @@ interface PageProps {
 }
 
 const ProductDetailsPage: NextPage<PageProps> = ({ productId }) => {
-  const { data, loading } = useSelector((state: RootState) => state.products);
-  const dispatch = useAppDispatch();
-
-  const product = data.find((product) => product.id === productId);
-
-  const handleAddToCart = (productId: string) => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    dispatch(updateCartQuantity({ productId }));
-    dispatch(fetchProductDetails(productId));
-  };
+  const product = useSelector((state: RootState) =>
+    state.products.data.find((product) => product.id === productId)
+  );
 
   if (!product) {
     return (
@@ -127,15 +112,7 @@ const ProductDetailsPage: NextPage<PageProps> = ({ productId }) => {
             <p className="text-lg font-semibold">
               Quantity: {product.quantity}
             </p>
-            <Button
-              onClick={() => {
-                handleAddToCart(product.id);
-              }}
-              className="w-full mt-auto mb-1 text-xl font-semibold flex gap-4 justify-center items-center"
-              disabled={loading}
-            >
-              Add to cart
-            </Button>
+            <AddToCartCTA productId={product.id}>Add to cart</AddToCartCTA>
           </div>
         </div>
       </>
