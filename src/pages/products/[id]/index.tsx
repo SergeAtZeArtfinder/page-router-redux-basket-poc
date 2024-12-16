@@ -23,7 +23,6 @@ import prisma from "@/lib/db/prisma";
 import { formatDateToString, formatPrice, serializeDates } from "@/lib/format";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import Spinner from "@/components/Spinner";
 
 type PageParams = {
   id: string;
@@ -135,7 +134,6 @@ const ProductDetailsPage: NextPage<PageProps> = ({ productId }) => {
               className="w-full mt-auto mb-1 text-xl font-semibold flex gap-4 justify-center items-center"
               disabled={loading}
             >
-              {loading && <Spinner />}
               Add to cart
             </Button>
           </div>
