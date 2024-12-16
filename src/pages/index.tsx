@@ -46,8 +46,11 @@ const HomePage: NextPage = () => {
   return (
     <>
       <Head>
-        <title>Home Page</title>
-        <meta name="description" content="Next page" />
+        <title>Zee Redukz Shop | Homepage</title>
+        <meta
+          name="description"
+          content="This is the next app with redux store for basket page poc"
+        />
         <link rel="icon" href="/favicon.ico" />
       </Head>
 

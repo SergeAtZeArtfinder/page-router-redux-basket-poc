@@ -101,7 +101,7 @@ const ProductDetailsPage: NextPage<PageProps> = ({ productId }) => {
   return (
     <>
       <Head>
-        <title>{product.name}</title>
+        <title>Zee Redukz Shop | {product.name}</title>
         <meta name="description" content={product.description} />
         <link rel="icon" href="/favicon.ico" />
       </Head>

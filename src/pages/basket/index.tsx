@@ -121,7 +121,7 @@ const BasketPage: NextPage<PageProps> = () => {
     return (
       <>
         <Head>
-          <title>Basket Page</title>
+          <title>Zee Redukz Shop | Basket Page</title>
           <meta name="description" content="Next page" />
           <link rel="icon" href="/favicon.ico" />
         </Head>
