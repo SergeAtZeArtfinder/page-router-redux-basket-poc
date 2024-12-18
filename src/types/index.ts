@@ -35,11 +35,15 @@ export type CartItemWithProducts = Prisma.CartItemGetPayload<{
 export type ShoppingCart = CartWithProducts & {
   size: number;
   subTotal: number;
+  shippingCost: number | null;
+  total: number;
 };
 
 export type ShoppingCartWithShipping = CartWithProductsAndShipping & {
   size: number;
   subTotal: number;
+  shippingCost: number | null;
+  total: number;
 };
 
 export interface IpAPIResponse {

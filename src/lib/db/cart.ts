@@ -4,14 +4,43 @@ import { getServerSession, type Session } from "next-auth";
 
 import type { Cart } from "@prisma/client";
 import type {
-  CartWithProducts,
   CartWithProductsAndShipping,
   ShoppingCart,
   ShoppingCartWithShipping,
 } from "@/types";
 
+import deliveryRates from "@/lib/content/deliveryRates.json";
 import { authOptions } from "@/lib/auth";
 import prisma from "./prisma";
+
+const getDeliveryRate = (country?: string) => {
+  if (!country) return null;
+  return (deliveryRates as Record<string, number>)[country] || null;
+};
+
+export const calculateCartTotal = ({
+  items,
+  shipping,
+  selectedShippingAddress,
+}: Pick<
+  CartWithProductsAndShipping,
+  "items" | "shipping" | "selectedShippingAddress"
+>): Pick<ShoppingCartWithShipping, "subTotal" | "shippingCost" | "total"> => {
+  const subTotal = items.reduce(
+    (totalPrice, item) => totalPrice + item.product.price * item.quantity,
+    0
+  );
+  const shippingAddress = selectedShippingAddress
+    ? shipping?.find((address) => address.id === selectedShippingAddress)
+    : undefined;
+  const shippingCost = getDeliveryRate(shippingAddress?.country);
+
+  return {
+    subTotal,
+    shippingCost,
+    total: subTotal + (shippingCost || 0),
+  };
+};
 
 /**
  * @description Creates a new cart and sets a cookie with the cart ID
@@ -50,6 +79,8 @@ export const createCart = async ({
     items: [],
     size: 0,
     subTotal: 0,
+    shippingCost: null,
+    total: 0,
   };
 };
 
@@ -64,7 +95,7 @@ export const getCart = async ({
   session?: Session | null;
   newCartId?: string;
 }): Promise<ShoppingCart | null> => {
-  let cart: CartWithProducts | null = null;
+  let cart: CartWithProductsAndShipping | null = null;
 
   if (session) {
     cart = await prisma.cart.findFirst({
@@ -80,6 +111,7 @@ export const getCart = async ({
             id: "asc",
           },
         },
+        shipping: true,
       },
     });
   } else {
@@ -99,6 +131,7 @@ export const getCart = async ({
                 id: "asc",
               },
             },
+            shipping: true,
           },
         })
       : null;
@@ -108,13 +141,21 @@ export const getCart = async ({
     return null;
   }
 
+  const { total, subTotal, shippingCost } = calculateCartTotal({
+    items: cart.items,
+    shipping: cart.shipping,
+    selectedShippingAddress: cart.selectedShippingAddress,
+  });
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const { shipping, ...withoutShipping } = cart;
+
   return {
-    ...cart,
+    ...withoutShipping,
     size: cart.items.reduce((totalQty, item) => totalQty + item.quantity, 0),
-    subTotal: cart.items.reduce(
-      (totalPrice, item) => totalPrice + item.product.price * item.quantity,
-      0
-    ),
+    subTotal,
+    shippingCost,
+    total,
   };
 };
 
@@ -175,13 +216,18 @@ export const getCartWithShipping = async ({
     return null;
   }
 
+  const { total, subTotal, shippingCost } = calculateCartTotal({
+    items: cart.items,
+    shipping: cart.shipping,
+    selectedShippingAddress: cart.selectedShippingAddress,
+  });
+
   return {
     ...cart,
     size: cart.items.reduce((totalQty, item) => totalQty + item.quantity, 0),
-    subTotal: cart.items.reduce(
-      (totalPrice, item) => totalPrice + item.product.price * item.quantity,
-      0
-    ),
+    subTotal,
+    shippingCost,
+    total,
   };
 };
 
