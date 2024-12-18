@@ -24,7 +24,6 @@ const AddToCartCTA = ({
   const cart = useSelector((state: RootState) => state.cart);
 
   const handleAddToCart = () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     dispatch(updateCartQuantity({ productId }));
   };
 

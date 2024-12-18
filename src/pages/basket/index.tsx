@@ -25,13 +25,7 @@ import Link from "next/link";
 import BasketLineItem from "@/components/BasketLineItem";
 import ShippingAddress from "@/components/ShippingAddress";
 import AddShippingAddress from "@/components/AddShippingAddress";
-import deliveryRates from "@/lib/content/deliveryRates.json";
 import { Button } from "@/components/ui/button";
-
-const getDeliveryRate = (country?: string) => {
-  if (!country) return null;
-  return (deliveryRates as Record<string, number>)[country] || null;
-};
 
 export const getServerSideProps: GetServerSideProps = async ({ req, res }) => {
   const session = await getServerSession(req, res, authOptions);
@@ -69,12 +63,9 @@ const BasketPage: NextPage<PageProps> = () => {
         (address) => address.id === cart.selectedShippingAddress
       )
     : null;
-  const deliveryRate = getDeliveryRate(shippingAddress?.country);
-  const deliveryCost = deliveryRate
-    ? formatPrice(deliveryRate)
-    : "Not selected";
-  const orderTotal = formatPrice((cart?.subTotal ?? 0) + (deliveryRate ?? 0));
-  const isReadyToCheckout = !!cart?.items.length && !!deliveryRate;
+  const orderTotal = formatPrice(cart?.total ?? 0);
+  const isReadyToCheckout =
+    !!cart?.items.length && !!cart.selectedShippingAddress;
 
   const handleGoToCheckout = () => {
     if (!isReadyToCheckout) return;
@@ -198,10 +189,12 @@ const BasketPage: NextPage<PageProps> = () => {
               <span
                 className={clsx(
                   "flex justify-end",
-                  !deliveryRate && "text-red-600"
+                  cart.shippingCost === null && "text-red-600"
                 )}
               >
-                {deliveryCost}
+                {cart.shippingCost !== null
+                  ? formatPrice(cart.shippingCost)
+                  : "No shipping selected"}
               </span>
             </p>
 

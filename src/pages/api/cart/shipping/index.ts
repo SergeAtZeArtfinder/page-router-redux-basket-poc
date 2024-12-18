@@ -8,6 +8,7 @@ import {
 } from "@/lib/validation/cart";
 import type { ShoppingCartWithShipping } from "@/types";
 import { authOptions } from "@/lib/auth";
+import { calculateCartTotal } from "@/lib/db/cart";
 
 const selectShippingAddress = async (cartId: string, addressId: string) => {
   const address = await prisma.shippingInformation.findUnique({
@@ -141,18 +142,23 @@ const handlePost = async (req: NextApiRequest, res: NextApiResponse) => {
     },
   });
 
+  const { total, subTotal, shippingCost } = cart
+    ? calculateCartTotal({
+        items: cart.items,
+        shipping: cart.shipping,
+        selectedShippingAddress: cart.selectedShippingAddress,
+      })
+    : { total: 0, subTotal: 0, shippingCost: 0 };
+
   const shoppingCart: ShoppingCartWithShipping | null = cart
     ? {
         ...cart,
         size:
           cart?.items.reduce((totalQty, item) => totalQty + item.quantity, 0) ||
           0,
-        subTotal:
-          cart?.items.reduce(
-            (totalPrice, item) =>
-              totalPrice + item.product.price * item.quantity,
-            0
-          ) || 0,
+        subTotal,
+        shippingCost,
+        total,
       }
     : null;
 
@@ -235,18 +241,23 @@ const handlePut = async (req: NextApiRequest, res: NextApiResponse) => {
     },
   });
 
+  const { total, subTotal, shippingCost } = cart
+    ? calculateCartTotal({
+        items: cart.items,
+        shipping: cart.shipping,
+        selectedShippingAddress: cart.selectedShippingAddress,
+      })
+    : { total: 0, subTotal: 0, shippingCost: 0 };
+
   const shoppingCart: ShoppingCartWithShipping | null = cart
     ? {
         ...cart,
         size:
           cart?.items.reduce((totalQty, item) => totalQty + item.quantity, 0) ||
           0,
-        subTotal:
-          cart?.items.reduce(
-            (totalPrice, item) =>
-              totalPrice + item.product.price * item.quantity,
-            0
-          ) || 0,
+        subTotal,
+        shippingCost,
+        total,
       }
     : null;
 
