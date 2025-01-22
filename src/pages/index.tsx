@@ -1,6 +1,8 @@
 import Head from "next/head";
 import { useSelector } from "react-redux";
 import { getServerSession } from "next-auth";
+import { useTranslation } from "../../i18n";
+import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 
 import type { NextPage, GetServerSideProps } from "next";
 
@@ -15,7 +17,7 @@ import ProductCard from "@/components/ProductCard";
 
 export const getServerSideProps: GetServerSideProps<{
   preloadedState: Partial<RootState>;
-}> = async ({ req, res }) => {
+}> = async ({ req, res, locale }) => {
   const session = await getServerSession(req, res, authOptions);
   const store = initializeStore();
   const productsFound = await prisma.product.findMany();
@@ -34,6 +36,7 @@ export const getServerSideProps: GetServerSideProps<{
   return {
     props: {
       preloadedState: { products, cart },
+      ...(await serverSideTranslations(locale!, ["common"])),
     },
   };
 };
@@ -42,6 +45,7 @@ const HomePage: NextPage = () => {
   const { data, loading, error } = useSelector(
     (state: RootState) => state.products
   );
+  const { t } = useTranslation("common");
 
   return (
     <>
@@ -55,7 +59,9 @@ const HomePage: NextPage = () => {
       </Head>
 
       <>
-        <h1 className="text-center mb-12 text-5xl font-bold">Buy this ! 👌</h1>
+        <h1 className="text-center mb-12 text-5xl font-bold">
+          {t("greeting")}
+        </h1>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {loading && <p>Loading...</p>}
           {error && <p>Error: {error}</p>}
