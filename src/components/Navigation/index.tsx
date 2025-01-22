@@ -10,6 +10,8 @@ import { type RootState, useAppDispatch } from "@/lib/redux/store";
 import { fetchLocation } from "@/lib/redux/locationSlice";
 import CartButton from "./CartButton";
 import UserButton from "./UserButton";
+import LanguageSelect from "./LanguageSelect";
+import Greeting from "./Greeting";
 
 const Navigation = (): JSX.Element => {
   const dispatch = useAppDispatch();
@@ -35,6 +37,8 @@ const Navigation = (): JSX.Element => {
         <MountainSnow />
       </Link>
       <div className="ml-auto flex gap-4 items-center">
+        <Greeting />
+        <LanguageSelect />
         <CartButton />
         <UserButton />
       </div>

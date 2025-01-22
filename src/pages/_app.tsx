@@ -7,11 +7,7 @@ import i18n from "../../i18n";
 
 import { type RootState, useStore } from "@/lib/redux/store";
 import Navigation from "@/components/Navigation";
-
-const languageMap = {
-  "en-us": "en-US",
-  "en-gb": "en-GB",
-};
+import { COOKIE_NAME, LOCALE_MAP } from "@/constants";
 
 const getCookieByName = (name: string, cookieString?: string) => {
   if (!cookieString) return null; // Return null if no cookies are present
@@ -59,10 +55,10 @@ export default function MyApp({ Component, pageProps }: AppPageProps) {
 MyApp.getInitialProps = async (appContext: AppContext) => {
   const appProps = await App.getInitialProps(appContext);
   const cookie = appContext.ctx.req?.headers.cookie || "";
-  const locale = getCookieByName("af-locale", cookie) || "en-GB";
+  const locale = getCookieByName(COOKIE_NAME.LOCALE, cookie) || "en-gb";
 
   if (appContext.ctx.req) {
-    await i18n.changeLanguage(languageMap[locale]);
+    await i18n.changeLanguage(LOCALE_MAP[locale]);
   }
 
   return { ...appProps, locale };
