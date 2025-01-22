@@ -20,6 +20,11 @@ const nextConfig = {
       },
     ],
   },
+  i18n: {
+    locales: ["not-set", "en-GB", "en-US"],
+    defaultLocale: "not-set", // This is on purpose, we don't want to set a default locale so we know when it's specified in the URL
+    localeDetection: false,
+  },
 };
 
 export default nextConfig;

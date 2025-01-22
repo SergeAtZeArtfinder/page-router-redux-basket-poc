@@ -1,0 +1,9 @@
+{
+  "button": {
+    "add_to_basket": "Add to Cart",
+    "add_both_to_basket": "Add both to Cart",
+    "already_in_your_basket": "Already in your Cart",
+    "add_to_my_favourites": "Add to my favorites",
+    "favourited": "Favorited"
+  }
+}
