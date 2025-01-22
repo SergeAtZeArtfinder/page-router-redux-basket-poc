@@ -17,7 +17,8 @@ import ProductCard from "@/components/ProductCard";
 
 export const getServerSideProps: GetServerSideProps<{
   preloadedState: Partial<RootState>;
-}> = async ({ req, res, locale }) => {
+}> = async ({ req, res }) => {
+  const locale = req.cookies.NEXT_LOCALE || "en";
   const session = await getServerSession(req, res, authOptions);
   const store = initializeStore();
   const productsFound = await prisma.product.findMany();
@@ -36,7 +37,7 @@ export const getServerSideProps: GetServerSideProps<{
   return {
     props: {
       preloadedState: { products, cart },
-      ...(await serverSideTranslations(locale!, ["common"])),
+      ...(await serverSideTranslations(locale, ["common"])),
     },
   };
 };

@@ -17,6 +17,11 @@ i18next
     interpolation: {
       escapeValue: false, // React already does escaping
     },
+    detection: {
+      order: ["cookie", "path", "htmlTag"],
+      caches: ["cookie"],
+      lookupCookie: "NEXT_LOCALE",
+    },
     backend: {
       loadPath: isServer
         ? `${process.cwd()}/public/locales/{{lng}}/{{ns}}.json`
