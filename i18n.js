@@ -1,4 +1,3 @@
-// filepath: /Users/sergebasangovs/Documents/Training/basket-redux-poc/i18n.js
 import { appWithTranslation, useTranslation } from "next-i18next";
 import i18next from "i18next";
 import Backend from "i18next-http-backend";
