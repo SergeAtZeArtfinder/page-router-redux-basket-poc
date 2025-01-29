@@ -1,31 +1,26 @@
-import type { NextPage, GetServerSideProps } from "next";
+import { useState } from "react";
 import Head from "next/head";
+import styled from "styled-components";
 
-import Counter from "@/components/Counter";
-import { type RootState, initializeStore } from "@/lib/redux/store";
-import { incrementByAmount } from "@/lib/redux/exampleSlice";
+import type { NextPage } from "next";
 
-const fetchMockData = <D,>(data: D, timeout = 800): Promise<D> =>
-  new Promise<D>((resolve) => {
-    setTimeout(() => resolve(data), timeout);
-  });
+import Modal from "@/components/Modal";
 
-export const getServerSideProps: GetServerSideProps<{
-  preloadedState: RootState;
-}> = async () => {
-  const store = initializeStore();
-  const newCount = await fetchMockData(12);
-  // Dispatch actions to update the state
-  store.dispatch(incrementByAmount(newCount));
+const Title = styled.h1`
+  font-size: 2em;
+  text-align: center;
+  color: palevioletred;
+`;
 
-  return {
-    props: {
-      preloadedState: store.getState(),
-    },
-  };
-};
+const ExtendedTitle = styled(Title)`
+  font-size: 1.5em;
+  color: tomato;
+  text-decoration: underline;
+`;
 
-const HomePage: NextPage = ({}) => {
+const HomePage: NextPage = () => {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
   return (
     <>
       <Head>
@@ -35,8 +30,17 @@ const HomePage: NextPage = ({}) => {
       </Head>
 
       <>
-        <h1 className="text-center mb-12 text-5xl font-bold">Home page</h1>
-        <Counter />
+        <ExtendedTitle>Home page</ExtendedTitle>
+        <div>
+          <button onClick={() => setIsModalOpen(true)}>Open Modal</button>
+
+          <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
+            <div>
+              <h2>Modal Content</h2>
+              <p>This is rendered using React Portal</p>
+            </div>
+          </Modal>
+        </div>
       </>
     </>
   );

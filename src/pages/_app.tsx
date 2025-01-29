@@ -1,22 +1,26 @@
-import "@/styles/globals.css";
 import type { AppProps } from "next/app";
-import { Provider } from "react-redux";
-import { type RootState, useStore } from "@/lib/redux/store";
+
+import { StyledMain, StyledHeader, StyledFooter } from "@/components/Layout";
+import GlobalStyles from "@/components/GlobalStyles";
 import Navigation from "@/components/Navigation";
 
 interface AppPageProps extends AppProps {
-  pageProps: Record<string, unknown> & { preloadedState: RootState };
+  pageProps: Record<string, unknown>;
 }
 
 export default function App({ Component, pageProps }: AppPageProps) {
-  const store = useStore(pageProps.preloadedState);
-
   return (
-    <Provider store={store}>
-      <Navigation />
-      <main className="flex flex-col items-center justify-center min-h-screen py-2">
+    <>
+      <GlobalStyles />
+      <StyledHeader>
+        <Navigation />
+      </StyledHeader>
+      <StyledMain>
         <Component {...pageProps} />
-      </main>
-    </Provider>
+      </StyledMain>
+      <StyledFooter>
+        <p>© {new Date().getFullYear()} Next.js TypeScript</p>
+      </StyledFooter>
+    </>
   );
 }
