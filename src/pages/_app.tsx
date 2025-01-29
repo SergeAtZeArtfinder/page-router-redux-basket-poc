@@ -2,6 +2,7 @@ import "@/styles/globals.css";
 import type { AppProps } from "next/app";
 import { Provider } from "react-redux";
 import { SessionProvider } from "next-auth/react";
+import { appWithTranslation } from "../../i18n";
 
 import { type RootState, useStore } from "@/lib/redux/store";
 import Navigation from "@/components/Navigation";
@@ -10,7 +11,7 @@ interface AppPageProps extends AppProps {
   pageProps: Record<string, unknown> & { preloadedState: RootState };
 }
 
-export default function App({ Component, pageProps }: AppPageProps) {
+function MyApp({ Component, pageProps }: AppPageProps) {
   const store = useStore(pageProps.preloadedState);
 
   return (
@@ -26,3 +27,5 @@ export default function App({ Component, pageProps }: AppPageProps) {
     </SessionProvider>
   );
 }
+
+export default appWithTranslation(MyApp);
